@@ -1,0 +1,52 @@
+{
+  "variables": {
+    "BUILD_NUMBER": "{{env `BUILD_NUMBER`}}",
+    "GOOGLE_APPLICATION_CREDENTIALS": "{{env `GOOGLE_APPLICATION_CREDENTIALS`}}",
+    "PROJECT_NAME": "{{env `CLOUD_PROJECT`}}",
+    "PROJECT_ZONE": "europe-west1-d",
+    "GCS_BUCKET": "ackee-images"
+  },
+  "builders": [
+    {
+      "type": "googlecompute",
+      "project_id": "{{user `PROJECT_NAME`}}",
+      "source_image": "ubuntu-1604-xenial-v20180306",
+      "ssh_username": "ubuntu",
+      "zone": "{{user `PROJECT_ZONE`}}",
+      "image_name": "redis-{{user `BUILD_NUMBER`}}",
+      "image_family": "ackee-redis",
+      "preemptible": true
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "file",
+        "source": "./redis.service",
+        "destination": "/tmp/"
+    },
+    {
+        "type": "file",
+        "source": "./systemd-override.conf",
+        "destination": "/tmp/"
+    },
+    {
+        "type": "shell",
+        "environment_vars": ["REDIS_VER=4.0.12"],
+        "script": "./install.sh"
+    },
+    {
+        "type": "shell",
+        "script": "./stackdriver.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "googlecompute-export",
+      "paths": [
+        "gs://{{user `GCS_BUCKET`}}/ackee-redis4.0-disk-latest.tar.gz",
+        "gs://{{user `GCS_BUCKET`}}/ackee-redis4.0-disk-{{user `BUILD_NUMBER`}}.tar.gz"
+      ],
+      "keep_input_artifact": false
+    }
+  ]
+}
