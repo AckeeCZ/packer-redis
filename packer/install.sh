@@ -2,7 +2,7 @@
 
 version=${REDIS_VER:=4.0}
 
-sudo apt-get -qq update
+sudo apt-get update
 DEBIAN_FRONTEND=noninteractive sudo apt-get install -y wget software-properties-common lsb-release perl curl build-essential tcl nmap htop pigz ncdu libhiredis0.13
 DEBIAN_FRONTEND=noninteractive sudo apt-get -y dist-upgrade
 
